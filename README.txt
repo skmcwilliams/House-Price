@@ -1,8 +1,5 @@
-"""
-Steven McWilliams
-IPD 237
-Final Project
-"""
+
+
 
 This program reads through a training dataset and allows the user to identify
 the best course of action for predicting housing prices of the test dataset.

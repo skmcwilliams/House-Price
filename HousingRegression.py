@@ -1,8 +1,3 @@
-"""
-Steven McWilliams
-IPD 237
-Final Project
-"""
 
 
 import pandas as  pd
