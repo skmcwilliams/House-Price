@@ -72,7 +72,6 @@ print(qual_sf_score)
 
 # Create Variable Class
 
-
 class Variables:
 
     y = np.squeeze(np.array(cleantrain[['SalePrice']]))
@@ -92,7 +91,7 @@ class Variables:
         plt.figure(figsize=(10,7))
         X_plot_poly = poly_features.fit_transform(x)
         y_pred = abs(model.predict(X_plot_poly))
-        plt.scatter(x, self.y, c ='b', )
+        plt.scatter(x, self.y, c ='b', edgecolors = (0, 0, 0))
         r2 = metrics.r2_score(self.y, y_pred)
         plt.plot(X_plot_poly, y_pred,'-r', label = 'R-Square: ' + str(r2))
         if len(np.unique([self.x])) > 11:
@@ -202,26 +201,30 @@ def Test_MLR():
     y_test_pred = abs(regressor.predict(X_Test))
     return y_test_pred
 
-# KMeans elbow method for Sale Price
-model = KMeans()
-plt.figure(figsize = (10,7))
-visualizer = KElbowVisualizer(model, k = (1,15))
-y = np.squeeze(np.array(cleantrain[['SalePrice']]))
-y = np.reshape(y,(-1,2))
-visualizer.fit(y)
-visualizer.show()
-plt.show()
-time.sleep(1)
 
-# KMeans graphs for Sale Price
-kmeans = KMeans(n_clusters=4)
-kmeans.fit(y)
-predicted = kmeans.predict(y)
-plt.figure(figsize = (10,7))
-plt.scatter(y[:,0],y[:,1], c = predicted,
-            edgecolors=(0, 0, 0), cmap = 'rainbow')
-plt.title('KMeans Sale Price')
-plt.show()
+def Sale_KMeans(k):
+    """KMeans elbow method for Sale Price"""
+    model = KMeans()
+    plt.figure(figsize = (10,7))
+    visualizer = KElbowVisualizer(model, k = (1,15))
+    y = np.squeeze(np.array(cleantrain[['SalePrice']]))
+    y = np.reshape(y,(-1,2))
+    visualizer.fit(y)
+    visualizer.show()
+    plt.show()
+    time.sleep(1)
+    
+    # KMeans graphs for Sale Price
+    kmeans = KMeans(n_clusters=k)
+    kmeans.fit(y)
+    predicted = kmeans.predict(y)
+    plt.figure(figsize = (10,7))
+    plt.scatter(y[:,0],y[:,1], c = predicted,
+                edgecolors=(0, 0, 0), cmap = 'rainbow')
+    plt.title('KMeans Sale Price')
+    plt.show()
+    
+    
 
 # Initiate Variables Class
 quality = Variables(variables[0])
@@ -234,8 +237,7 @@ livingarea.regressionplot(1)
 # Plot KMeans Charts
 quality.KMeans(4)
 livingarea.KMeans(4)
-
-
+Sale_KMeans(4)
 
 
 # Run MLR to see how this performs **best result in RMSLE and KFolds***
