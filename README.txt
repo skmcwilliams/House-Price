@@ -46,6 +46,8 @@ Test_MLR:   Runs MLR with the test dataset, returns to the calling variable
                 
 LogisticRegression: Added to the thought process, results in more accurate restults, but not reflected on Kaggle, as 
                         submission rank only improved by ~200 entrants
+
+SGD/Test_SGD: Resulted in highest accuracy
                 
 NOTES:
 If the user wants to change the correlation used to identify variables, change

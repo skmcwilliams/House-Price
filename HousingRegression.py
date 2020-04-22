@@ -1,11 +1,9 @@
-
-
 import pandas as  pd
 import numpy as np
 import scipy
 from matplotlib import pyplot as plt
 from sklearn import preprocessing
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression,SGDRegressor
 from sklearn.cluster import KMeans
 from yellowbrick.cluster import KElbowVisualizer
 from sklearn import metrics
@@ -280,8 +278,68 @@ def Sale_KMeans(k):
                 edgecolors=(0, 0, 0), cmap = 'rainbow')
     plt.title('KMeans Sale Price')
     plt.show()
+
+
+def SGD():
+    # Create variables for SGD model
+    MLR_X = preprocessing.scale(cleantrain[[variable for variable 
+    in cleantrain if variable != 'SalePrice']].values)
+
+    MLR_Y = cleantrain['SalePrice'].values
     
+    # Build predictions and plot
+    regressor = SGDRegressor(loss='squared_loss', penalty='l2', alpha=0.0001, l1_ratio=0.15,
+             fit_intercept=True, max_iter=1000, tol=0.001, shuffle=True, 
+             verbose=0, epsilon=0.1, random_state=None, 
+             learning_rate='invscaling', eta0=0.01, power_t=0.25,
+             early_stopping=False, validation_fraction=0.1,
+             n_iter_no_change=5, warm_start=False, average=False)
+    regressor.fit(MLR_X, MLR_Y) 
+    y_pred = abs(regressor.predict(MLR_X))
+    plt.figure(figsize = (10,7))
+    plt.scatter(MLR_Y, y_pred, edgecolors = (0, 0, 0))
+    plt.title("Sale Prices")
+    plt.xlabel("Actual Sale Prices")
+    plt.ylabel('Predicted Sale Price')
+    plt.show()
+    time.sleep(1)
+    # Visualize Actuals vs. Predicted
+    preds = pd.DataFrame({'Actual': MLR_Y, 'Predicted': y_pred})
+    print(preds.head(25))
+ 
+    scores = scipy.stats.linregress(MLR_Y, y_pred)
+    print(scores)
+    print('\nRESULTS OF TRAIN SGDReg MODEL:')
+    print('Mean Absolute Error:', metrics.mean_absolute_error(MLR_Y, y_pred))  
+    print('Mean Squared Error:', metrics.mean_squared_error(MLR_Y, y_pred))  
+    print('Root Mean Squared Log Error:', np.sqrt(metrics.mean_squared_log_error(MLR_Y, y_pred)))
     
+    # Run KFolds
+    scores = cross_val_score(regressor, MLR_X, MLR_Y, cv=10)
+    print('KFold Scores for MLogReg Training Model:' + str(scores))
+    mean = round(scores.mean()*100,2)
+    print('Average Accuracy: ' + str(mean) + '%')
+
+
+def Test_SGD():
+    # Create variables for SGD model
+    MLR_X = preprocessing.scale(cleantrain[[variable for variable 
+    in cleantrain if variable != 'SalePrice']].values)
+
+    MLR_Y = cleantrain['SalePrice'].values
+    
+    X_Test = preprocessing.scale(cleantest[[variable for variable in cleantest
+                                            if variable != 'SalePrice']].values)
+    
+    regressor = SGDRegressor(loss='squared_loss', penalty='l2', alpha=.01, l1_ratio=0.15,
+             fit_intercept=True, max_iter=1000, tol=0.001, shuffle=True, 
+             verbose=0, epsilon=0.000000001, random_state=None, 
+             learning_rate='invscaling', eta0=0.01, power_t=0.25,
+             early_stopping=False, validation_fraction=0.1,
+             n_iter_no_change=5, warm_start=False, average=False)
+    regressor.fit(MLR_X, MLR_Y) 
+    y_test_pred = abs(regressor.predict(X_Test))
+    return y_test_pred
 
 # Initiate Variables Class
 quality = Variables(variables[0])
@@ -300,9 +358,9 @@ livingarea = Variables(variables[1])
 #MLR()
 #log()
 
-"""Call Test_MLR as predictions to create list of predicted housing prices to be
+"""Call Test_SGD as predictions to create list of predicted housing prices to be
 pushed to dataframe and csv file"""
-predictions = Test_MLogR()
+#predictions = Test_SGD()
 
 """
 #submit to kaggle
@@ -310,5 +368,4 @@ submit = pd.DataFrame()
 #submit['id'] = test['id']
 submit['SalePrice'] = predictions
 print(submit.head(20))
-submit.to_csv('sample_submission.csv', index = False)
-"""
+submit.to_csv('sample_submission.csv', index = False)"""
