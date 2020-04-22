@@ -357,6 +357,7 @@ livingarea = Variables(variables[1])
 # Run MLR to see how this performs **best result in RMSLE and KFolds***
 #MLR()
 #log()
+SGD()
 
 """Call Test_SGD as predictions to create list of predicted housing prices to be
 pushed to dataframe and csv file"""
