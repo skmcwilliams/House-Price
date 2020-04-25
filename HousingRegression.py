@@ -1,4 +1,4 @@
-import pandas as  pd
+import pandas as pd
 import numpy as np
 import scipy
 from matplotlib import pyplot as plt
@@ -8,9 +8,8 @@ from sklearn.cluster import KMeans
 from yellowbrick.cluster import KElbowVisualizer
 from sklearn import metrics
 from sklearn.metrics import mean_squared_log_error, accuracy_score
-from math import sqrt
-from sklearn.model_selection import cross_val_predict, cross_val_score
-from sklearn.preprocessing import MinMaxScaler, PolynomialFeatures
+from sklearn.model_selection import cross_val_score
+from sklearn.preprocessing import PolynomialFeatures
 import seaborn as sbn
 
 
@@ -31,37 +30,35 @@ train.drop(train[train.GrLivArea > 4000].index, inplace = True)
 train.drop(train[train.SalePrice > 450000].index, inplace = True)
 
 # Clean data by interpolating nulls, sum of nulls is now 0
+train = train.select_dtypes(include=[np.number]).interpolate()
 
-cleantrain = train.select_dtypes(include=[np.number]).interpolate()
 
-
-# CleanTrain Dataframe shown below - copy to console"
-cleantrain.shape
-cleantrain
-print(sum(cleantrain.isnull().sum() != 0))
+# Train Dataframe shown below - copy to console"
+train.shape
+train
+train.isnull().sum() != 0
 
 
 """clean test data same as train data"""
 
 # Clean data by interpolating nulls, sum of nulls is now 0
-test.drop(train[train.GrLivArea > 4000].index, inplace = True)
-test.drop(train[train.SalePrice > 450000].index, inplace = True)
-cleantest = test.select_dtypes(include=[np.number]).interpolate()
+test.select_dtypes(include=[np.number]).interpolate()
+test = test.select_dtypes(include=[np.number]).interpolate()
 
 # CleanTest Dataframe shown below - copy to console
-cleantest.shape
-cleantest
-print(sum(cleantest.isnull().sum() != 0))
+test.shape
+test
+test.isnull().sum() != 0
 
 def dist_plot():
     """Distribution of Sale Prices, skewed right due to large amount of homes
         selling between $100k and $200k"""
     plt.figure(figsize = (10,7))
     plt.tight_layout()
-    sbn.distplot(cleantrain[['SalePrice']])
+    sbn.distplot(train[['SalePrice']])
     plt.title('SalePrice Distribution')
-    print('Skewed Distribution: ', scipy.stats.skew(cleantrain[['SalePrice']]))
-    print('Raw Data Points:/n', cleantrain.SalePrice.describe())
+    print('Skewed Distribution: ', scipy.stats.skew(train[['SalePrice']]))
+    print('Raw Data Points:/n', train.SalePrice.describe())
     return plt.show()
 
 def elbow_method():
@@ -69,7 +66,7 @@ def elbow_method():
     model = KMeans()
     plt.figure(figsize=(10,7))
     visualizer = KElbowVisualizer(model, k=(1,15))
-    visualizer.fit(cleantrain[['SalePrice']])
+    visualizer.fit(train[['SalePrice']])
     visualizer.show()
     return plt.show()
     
@@ -80,7 +77,7 @@ then create list of those variables for easier iteration - Only two variables
 have greater than a 70% correlation to SalePrice.
 """
 correlations = {}
-correlations.update(cleantrain[cleantrain.columns[0:]].corr('pearson')['SalePrice'])
+correlations.update(train[train.columns[0:]].corr('pearson')['SalePrice'])
 
 variables = [variable for variable, correlation in correlations.items()
              if correlation >= 0.70 and correlation != 1.00
@@ -88,23 +85,22 @@ variables = [variable for variable, correlation in correlations.items()
 
 
 # wanted to see correlation between Quality Rating and Sq Ft.
-qual_sf_score = scipy.stats.linregress(np.squeeze(np.array(cleantrain[['OverallQual']])),
-                            np.squeeze(np.array(cleantrain[['GrLivArea']])))
+qual_sf_score = scipy.stats.linregress(np.squeeze(np.array(train[['OverallQual']])),
+                            np.squeeze(np.array(train[['GrLivArea']])))
 qual_sf_score
 
 
 
 def predict(x, method, degrees = None, k = None):
       
-    y = np.squeeze(np.array(cleantrain[['SalePrice']]))
+    y = np.squeeze(np.array(train[['SalePrice']]))
     
     if method == 'regression':
         x = np.reshape(x,(-1, 1))
         poly = PolynomialFeatures(degree=degrees, include_bias=False)
-        X_poly = poly.fit_transform(x)
         regressor = LinearRegression()
     
-    if method == 'KMeans':
+    elif method == 'KMeans':
         """create KMeans clustering model"""
         # KMeans elbow method
         
@@ -117,17 +113,17 @@ def predict(x, method, degrees = None, k = None):
         
         return plt.show()
 
-    if method == "MLR":
+    elif method == "MLR":
         # Build predictions and plot
         regressor = LinearRegression() 
         
         
-    if method == 'log':
+    elif method == 'log':
         # Build predictions and plot
         regressor = LogisticRegression(penalty = 'l2', max_iter = 5000, n_jobs = 3)
             
         
-    if method == 'SGD':
+    elif method == 'SGD':
         # Build predictions and plot
         regressor = SGDRegressor(loss='squared_loss', penalty='l2', alpha=0.0001, l1_ratio=0.15,
                  fit_intercept=True, max_iter=1000, tol=0.001, shuffle=True, 
@@ -136,11 +132,11 @@ def predict(x, method, degrees = None, k = None):
                  early_stopping=False, validation_fraction=0.1,
                  n_iter_no_change=5, warm_start=False, average=False)
         
-    if method == 'Lasso':
+    elif method == 'Lasso':
         regressor = Lasso(alpha = 0.0001, max_iter = 5000)
         
     
-    if method == 'ElasticNet':
+    elif method == 'ElasticNet':
         regressor = ElasticNet(alpha = 0.0001)
         
         
@@ -176,29 +172,39 @@ def predict(x, method, degrees = None, k = None):
 #dist_plot()
 #elbow_method()
 
-x_var = preprocessing.scale(cleantrain[[variable for variable in cleantrain
+train_x = preprocessing.scale(train[[variable for variable in train
+                                            if variable != 'SalePrice']].values)
+
+X = preprocessing.scale(test[[variable for variable in train
                                             if variable != 'SalePrice']].values)
     
+y = np.squeeze(np.array(train[['SalePrice']]))
 
-"""
-predict(x_var, 'SGD')
+#predict(train_x, 'SGD')
 
-predict(x_var,'MLR')
+#predict(train_x,'MLR')
 
     
-predict(x_var,'ElasticNet')
-"""
-predict(preprocessing.scale(cleantrain[[variable for variable in cleantrain
-                                            if variable != 'SalePrice']].values),'Lasso')
+#predict(train_x,'ElasticNet')
+
+#predict(train_x,'Lasso')
+
+#predict(train_x,'log')
+
     
 """Call Test_SGD as predictions to create list of predicted housing prices to be
 pushed to dataframe and csv file"""
-#predictions = Test_SGD()
 
-"""
+regressor = Lasso(alpha = 0.0001, max_iter = 5000)
+
+regressor.fit(train_x,y)
+predictions = abs(regressor.predict(X))
+
+
+
 #submit to kaggle
 submit = pd.DataFrame()
 #submit['id'] = test['id']
 submit['SalePrice'] = predictions
 print(submit.head(20))
-submit.to_csv('sample_submission.csv', index = False)"""
+submit.to_csv('sample_submission.csv', index = False)
