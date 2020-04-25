@@ -99,7 +99,7 @@ def predict(x, method, degrees = None, k = None):
     if method == 'regression':
         x = np.reshape(x,(-1, 1))
         poly = PolynomialFeatures(degree=degrees, include_bias=False)
-        x_poly = polynomial_features.fit_transform(x)
+        x = poly.fit_transform(x)
         regressor = LinearRegression()
     
     elif method == 'KMeans':
