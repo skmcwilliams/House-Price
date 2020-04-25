@@ -176,7 +176,7 @@ def predict(x, method, degrees = None, k = None):
 #dist_plot()
 #elbow_method()
 
-x-var = preprocessing.scale(cleantrain[[variable for variable in cleantrain
+x_var = preprocessing.scale(cleantrain[[variable for variable in cleantrain
                                             if variable != 'SalePrice']].values)
     
 
