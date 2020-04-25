@@ -3,6 +3,7 @@ import numpy as np
 import scipy
 from matplotlib import pyplot as plt
 from sklearn import preprocessing
+from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression, SGDRegressor, Lasso, ElasticNet
 from sklearn.cluster import KMeans
 from yellowbrick.cluster import KElbowVisualizer
@@ -98,6 +99,7 @@ def predict(x, method, degrees = None, k = None):
     if method == 'regression':
         x = np.reshape(x,(-1, 1))
         poly = PolynomialFeatures(degree=degrees, include_bias=False)
+        x_poly = polynomial_features.fit_transform(x)
         regressor = LinearRegression()
     
     elif method == 'KMeans':
@@ -139,7 +141,9 @@ def predict(x, method, degrees = None, k = None):
     elif method == 'ElasticNet':
         regressor = ElasticNet(alpha = 0.0001)
         
-        
+    elif method == 'XGB':
+        regressor = XGBRegressor(n_estimators=1000, learning_rate=0.05, n_jobs=4)
+
     regressor.fit(x, y) 
     y_pred = abs(regressor.predict(x))
     plt.figure(figsize = (10,7))
@@ -165,7 +169,7 @@ def predict(x, method, degrees = None, k = None):
     
     # Run KFolds
     scores = cross_val_score(regressor, x, y, cv=10)
-    print('KFold Scores for MLogReg Training Model:' + str(scores))
+    print('KFold Scores for Training Model:' + str(scores))
     mean = round(scores.mean()*100,2)
     print('Average Accuracy: ' + str(mean) + '%')
 
@@ -190,12 +194,13 @@ y = np.squeeze(np.array(train[['SalePrice']]))
 #predict(train_x,'Lasso')
 
 #predict(train_x,'log')
+predict(train_x, 'XGB')
 
     
 """Call Test_SGD as predictions to create list of predicted housing prices to be
-pushed to dataframe and csv file"""
+pushed to dataframe and csv file
 
-regressor = Lasso(alpha = 0.0001, max_iter = 5000)
+regressor = XGBRegressor(n_estimators=1000, learning_rate=0.05, n_jobs=4)
 
 regressor.fit(train_x,y)
 predictions = abs(regressor.predict(X))
@@ -208,3 +213,4 @@ submit = pd.DataFrame()
 submit['SalePrice'] = predictions
 print(submit.head(20))
 submit.to_csv('sample_submission.csv', index = False)
+"""
