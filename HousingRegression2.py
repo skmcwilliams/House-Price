@@ -123,13 +123,11 @@ def predict(x, method, degrees = None, k = None):
     elif method == "MLR":
         # Build predictions and plot
         regressor = LinearRegression() 
-        
-        
+               
     elif method == 'log':
         # Build predictions and plot
         regressor = LogisticRegression(penalty = 'l2', max_iter = 5000, n_jobs = 3)
-            
-        
+                  
     elif method == 'SGD':
         # Build predictions and plot
         regressor = SGDRegressor(loss='squared_loss', penalty='l2', alpha=0.0001, l1_ratio=0.15,
@@ -142,7 +140,6 @@ def predict(x, method, degrees = None, k = None):
     elif method == 'Lasso':
         regressor = Lasso(alpha = 0.0001, max_iter = 5000)
         
-    
     elif method == 'ElasticNet':
         regressor = ElasticNet(alpha = 0.0001)
         

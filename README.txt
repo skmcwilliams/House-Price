@@ -47,7 +47,7 @@ Test_MLR:   Runs MLR with the test dataset, returns to the calling variable
 LogisticRegression: Added to the thought process, results in more accurate restults, but not reflected on Kaggle, as 
                         submission rank only improved by ~200 entrants
 
-SGD: runs Simple Gradient Discent
+SGD: runs Stochastic Gradient Discent
 
 XGB: Proved to be the most accurate in train set and on Kaggle, improving my position to top 50%
                 
