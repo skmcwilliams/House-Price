@@ -2,10 +2,8 @@ import pandas as pd
 import numpy as np
 import scipy
 from matplotlib import pyplot as plt
-from sklearn import preprocessing
 from xgboost import XGBRegressor
 from sklearn import metrics
-from sklearn.metrics import mean_squared_log_error, accuracy_score
 from sklearn.model_selection import cross_val_score
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_regression
@@ -15,34 +13,43 @@ import seaborn as sbn
 # read test, train files
 train = pd.read_csv("train.csv", index_col=0)
 test = pd.read_csv("test.csv", index_col=0)
+train.drop(train.columns[0], axis =1, inplace=True)
+test.drop(test.columns[0], axis =1, inplace=True)
 
-"""
 # Check shape of test data
-print(train.shape)
-print(test.shape)
-print(train.head())"""
+train.shape
+train.head()
+test.shape
+test.head()
 
 # Interpolate data
 train = train.select_dtypes(include=[np.number]).interpolate()
 train.isnull().sum() != 0
-
-# standardize and preprocess
-x_train = train.iloc[:, :-1].values
-sc_x = StandardScaler()
-x_train = sc_x.fit_transform(x_train)
-y = np.squeeze(np.array(train[['SalePrice']]))
-
-# apply feature selection
-fs = SelectKBest(score_func=f_regression, k=10)
-x_train = fs.fit_transform(x_train, y)
-
-# Clean Test data by interpolating nulls and scale
 test.select_dtypes(include=[np.number]).interpolate()
 test = test.select_dtypes(include=[np.number]).interpolate()
+
+# define variables
+x_train = train.iloc[:, :-1].values
 X_test = test.values
+y = np.squeeze(np.array(train[['SalePrice']]))
+
+# standardize scale
+sc_x = StandardScaler()
+x_train = sc_x.fit_transform(x_train)
 X_test = sc_x.transform(X_test)
+
+# apply feature selection
+fs = SelectKBest(score_func=f_regression, k=5)
+x_train = fs.fit_transform(x_train, y)
 X_test = fs.transform(X_test)
 
+# Check New data
+train.shape
+train.head()
+test.shape
+test.head()
+train.describe()
+test.describe()
 
 def dist_plot():
     """Distribution of Sale Prices, skewed right due to large amount of homes
@@ -52,13 +59,14 @@ def dist_plot():
     sbn.distplot(train[['SalePrice']])
     plt.title('SalePrice Distribution')
     print('Skewed Distribution: ', scipy.stats.skew(train[['SalePrice']]))
-    print('Raw Data Points:/n', train.SalePrice.describe())
+    print('General Data Points:\n', train.SalePrice.describe())
     return plt.show()
 
 
 dist_plot()
 
-regressor = XGBRegressor(n_estimators=2000, learning_rate=0.01, n_jobs=4,early_stopping_rounds=5)
+regressor = XGBRegressor(n_estimators=5000, learning_rate=0.05,
+                         n_jobs=4,early_stopping_rounds=5)
 regressor.fit(x_train, y)
 y_pred = abs(regressor.predict(x_train))
 plt.figure(figsize=(10, 7))
@@ -73,19 +81,14 @@ preds = pd.DataFrame({'Actual': y, 'Predicted': y_pred})
 print(preds.head(25))
 
 # calculate scores
-scores = scipy.stats.linregress(y, y_pred)
+
 print('\nRESULTS OF TRAIN  MODEL:')
+scores = scipy.stats.linregress(y, y_pred)
 print(scores)
 print('Mean Absolute Error:', metrics.mean_absolute_error(y, y_pred))
 print('Mean Squared Error:', metrics.mean_squared_error(y, y_pred))
 print('Root Mean Squared Log Error:',
       np.sqrt(metrics.mean_squared_log_error(y, y_pred)))
-
-# Run KFolds for second accruacy check (RSMLE is primary)
-scores = cross_val_score(regressor, x_train, y, cv=10)
-print('KFold Scores for Training Model:' + str(scores))
-mean = round(scores.mean()*100, 2)
-print('Average Accuracy: ' + str(mean) + '%')
 
 # Perform XGB on test data
 regressor.fit(x_train, y)
@@ -94,5 +97,5 @@ predictions = abs(regressor.predict(X_test))
 # Create submit CSV
 submit = pd.read_csv('sample_submission.csv')
 submit['SalePrice'] = predictions
-print(submit.head(20))
-submit.to_csv('sample_submission.csv', index=False)
+print('\nTest Predictions: \n', submit.head(20))
+submit.to_csv('submission.csv', index=False)
