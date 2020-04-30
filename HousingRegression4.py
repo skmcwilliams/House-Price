@@ -4,7 +4,6 @@ import scipy
 from matplotlib import pyplot as plt
 from xgboost import XGBRegressor
 from sklearn import metrics
-from sklearn.model_selection import cross_val_score
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_regression
 from sklearn.preprocessing import StandardScaler
