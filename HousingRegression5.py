@@ -10,22 +10,18 @@ from sklearn.preprocessing import StandardScaler
 import seaborn as sbn
 
 # read test, train files
-train = pd.read_csv("train.csv", index_col=0)
-test = pd.read_csv("test.csv", index_col=0)
-train.drop(train.columns[0], axis =1, inplace=True)
-test.drop(test.columns[0], axis =1, inplace=True)
+train = pd.read_csv("train.csv")
+test = pd.read_csv("test.csv")
+sample = pd.read_csv('sample_submission.csv')
 
-# Check shape of test data
-train.shape
-train.head()
-test.shape
-test.head()
+train = train.drop('Id', axis=1)
+test = test.drop('Id', axis=1)
 
 # Interpolate data
 train = train.select_dtypes(include=[np.number]).interpolate()
 train.isnull().sum() != 0
-test.select_dtypes(include=[np.number]).interpolate()
 test = test.select_dtypes(include=[np.number]).interpolate()
+test.isnull().sum() != 0
 
 # define variables
 x_train = train.iloc[:, :-1].values
@@ -38,7 +34,7 @@ x_train = sc_x.fit_transform(x_train)
 X_test = sc_x.transform(X_test)
 
 # apply feature selection
-fs = SelectKBest(score_func=f_regression, k=5)
+fs = SelectKBest(score_func=f_regression, k=10)
 x_train = fs.fit_transform(x_train, y)
 X_test = fs.transform(X_test)
 
@@ -64,7 +60,7 @@ def dist_plot():
 
 dist_plot()
 
-regressor = XGBRegressor(n_estimators=5000, learning_rate=0.05,
+regressor = XGBRegressor(n_estimators=1500, learning_rate=0.1,
                          n_jobs=4,early_stopping_rounds=5)
 regressor.fit(x_train, y)
 y_pred = abs(regressor.predict(x_train))
@@ -94,7 +90,8 @@ regressor.fit(x_train, y)
 predictions = abs(regressor.predict(X_test))
 
 # Create submit CSV
-submit = pd.read_csv('sample_submission.csv')
+submit = pd.DataFrame()
+submit['Id'] = sample['Id']
 submit['SalePrice'] = predictions
 print('\nTest Predictions: \n', submit.head(20))
 submit.to_csv('submission.csv', index=False)
