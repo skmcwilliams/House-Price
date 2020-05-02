@@ -60,7 +60,7 @@ def dist_plot():
 
 dist_plot()
 
-regressor = XGBRegressor(n_estimators=1500, learning_rate=0.1,
+regressor = XGBRegressor(n_estimators=1000, learning_rate=0.1,
                          n_jobs=4,early_stopping_rounds=5)
 regressor.fit(x_train, y)
 y_pred = abs(regressor.predict(x_train))
