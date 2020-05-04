@@ -49,10 +49,11 @@ test.describe()
 def dist_plot():
     """Distribution of Sale Prices, skewed right due to large amount of homes
         selling between $100k and $200k"""
-    plt.figure(figsize=(10, 7))
+    fig, ax = plt.subplots(figsize=(12,10))
     plt.tight_layout()
+    ax.grid()
     sbn.distplot(train[['SalePrice']])
-    plt.title('SalePrice Distribution')
+    ax.set(title='SalePrice Distribution')
     print('Skewed Distribution: ', scipy.stats.skew(train[['SalePrice']]))
     print('General Data Points:\n', train.SalePrice.describe())
     return plt.show()
@@ -64,11 +65,10 @@ regressor = XGBRegressor(n_estimators=1000, learning_rate=0.1,
                          n_jobs=4,early_stopping_rounds=5)
 regressor.fit(x_train, y)
 y_pred = abs(regressor.predict(x_train))
-plt.figure(figsize=(10, 7))
-plt.scatter(y, y_pred, edgecolors=(0, 0, 0))
-plt.title("Sale Prices")
-plt.xlabel("Actual Sale Prices")
-plt.ylabel('Predicted Sale Price')
+fig, ax = plt.subplots(figsize=(12,10))
+plt.tight_layout()
+ax.scatter(y, y_pred, edgecolors=(0, 0, 0))
+ax.set(title="Sale Price", xlabel='Actual Sale Price', ylabel='Predicted Sale Price')
 plt.show()
 
 # Visualize Actuals vs. Predicted
