@@ -4,6 +4,7 @@ import scipy
 from matplotlib import pyplot as plt
 from xgboost import XGBRegressor
 from sklearn import metrics
+from yellowbrick.features import Rank1D
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_regression
 from sklearn.preprocessing import StandardScaler
@@ -33,8 +34,15 @@ sc_x = StandardScaler()
 x_train = sc_x.fit_transform(x_train)
 X_test = sc_x.transform(X_test)
 
+
+# Rank features
+visualizer = Rank1D(algorithm='shapiro')
+visualizer.fit(x_train, y)
+visualizer.transform(x_train)
+visualizer.show()
+
 # apply feature selection
-fs = SelectKBest(score_func=f_regression, k=10)
+fs = SelectKBest(score_func=f_regression, k=17) # 17 features with 0.8+ shaprio score
 x_train = fs.fit_transform(x_train, y)
 X_test = fs.transform(X_test)
 
@@ -84,6 +92,7 @@ print('Mean Absolute Error:', metrics.mean_absolute_error(y, y_pred))
 print('Mean Squared Error:', metrics.mean_squared_error(y, y_pred))
 print('Root Mean Squared Log Error:',
       np.sqrt(metrics.mean_squared_log_error(y, y_pred)))
+
 
 # Perform XGB on test data
 regressor.fit(x_train, y)
